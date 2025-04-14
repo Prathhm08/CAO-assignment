@@ -125,19 +125,7 @@ def draw_arrows(y, num_bits=8, default_angle_deg=70):
     wait(0.2)
 
 
-def twos_complement_to_decimal_8(binary_str):
-    # Check if it's negative
-    if binary_str[0] == "1":
-        # 2's complement: invert + add 1
-        inverted = "".join("1" if b == "0" else "0" for b in binary_str)
-        decimal_value = int(inverted, 2) + 1
-        return -decimal_value
-    else:
-        # Positive number
-        return int(binary_str, 2)
-
-
-def twos_complement_to_decimal_4(binary_str):
+def twos_comp_to_dec(binary_str):
     # Check if it's negative
     if binary_str[0] == "1":
         # 2's complement: invert + add 1
@@ -190,7 +178,7 @@ def booths_algorithm(multiplicand, multiplier):
         A,
         Q,
         Q_1,
-        f"Final Product: {A + Q} (Decimal : {twos_complement_to_decimal_4(multiplicand)} X {twos_complement_to_decimal_4(multiplier)} = {twos_complement_to_decimal_8(A + Q)})",
+        f"Final Product: {A + Q} (Decimal : {twos_comp_to_dec(multiplicand)} X {twos_comp_to_dec(multiplier)} = {twos_comp_to_dec(A + Q)})",
     )
 
     # Keep window open
