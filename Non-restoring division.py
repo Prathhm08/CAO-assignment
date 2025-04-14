@@ -5,7 +5,7 @@ import time
 pygame.init()
 WIDTH, HEIGHT = 1200, 900
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Restoring Division - Blackboard Style")
+pygame.display.set_caption("Non-Restoring Division - Blackboard Style")
 font = pygame.font.SysFont("consolas", 26)
 small_font = pygame.font.SysFont("consolas", 22)
 clock = pygame.time.Clock()
@@ -36,7 +36,7 @@ def bin_sub(a, b):
 
 def draw_title():
     screen.fill((20, 20, 20))
-    title = font.render("Restoring Division Algorithm", True, (255, 255, 255))
+    title = font.render("Non-Restoring Division Algorithm", True, (255, 255, 255))
     screen.blit(title, (WIDTH // 2 - title.get_width() // 2, 20))
 
     headers = ["Step", "A", "Q", "Operation", "Note"]
@@ -75,72 +75,69 @@ def draw_connection_line(A, Q, y_offset):
     top_y = mid_y - 7
     bottom_y = top_y + 12
 
-    # Tiny vertical line up from MSB of A
     pygame.draw.line(screen, (0, 255, 255), (msb_a_x, top_y), (msb_a_x, mid_y), 2)
-
-    # Long horizontal line to LSB of Q
     pygame.draw.line(screen, (0, 255, 255), (msb_a_x, mid_y), (lsb_q_x, mid_y), 2)
-
-    # Tiny vertical line down into Q
     pygame.draw.line(screen, (0, 255, 255), (lsb_q_x, mid_y), (lsb_q_x, bottom_y), 2)
-    # Draw the downward arrowhead at the end of the line (at LSB of Q)
+
     arrow_height = 6
     arrow_width = 3
     arrow_points = [
-        (lsb_q_x - arrow_width, bottom_y),  # Left of the arrow base
-        (lsb_q_x + arrow_width, bottom_y),  # Right of the arrow base
+        (lsb_q_x - arrow_width, bottom_y),
+        (lsb_q_x + arrow_width, bottom_y),
         (lsb_q_x, bottom_y + arrow_height),
-    ]  # Tip of the arrow
-
+    ]
     pygame.draw.polygon(screen, (0, 255, 255), arrow_points)
     wait(0.2)
 
 
-def restoring_division(dividend, divisor):
-    n = 4  # Q is 4-bit
-    A = "00000"  # A is now 5-bit
+def non_restoring_division(dividend, divisor):
+    n = 4
+    A = "00000"
     Q = dividend.zfill(n)
-    M = divisor.zfill(5)  # M same width as A
+    M = divisor.zfill(5)
 
     draw_title()
     y = 120
-    step = 0
     log_step("0", A, Q, "INIT", "Initial state", y)
 
-    for i in range(n):
-        step += 1
+    for step in range(1, n + 1):
         y += 80
         draw_step_header(step, y - 20)
 
-        # Substep 1: Shift left
+        # Substep 1: Shift left AQ
         AQ = A + Q
         AQ = AQ[1:] + "0"
         A, Q = AQ[:5], AQ[5:]
         log_step(f"{step}.1", A, Q, "Shift Left", "A and Q shifted", y)
 
         y += 40
-        # Substep 2: A - M
-        A_temp = bin_sub(A, M)
-        log_step(f"{step}.2", A_temp, Q, "A - M", "Trial subtraction", y)
+        # Substep 2: A +/- M depending on sign of A
+        if A[0] == "0":
+            A_temp = bin_sub(A, M)
+            op_note = "A ≥ 0 → A - M"
+            operation = "A - M"
+        else:
+            A_temp = bin_add(A, M)
+            op_note = "A < 0 → A + M"
+            operation = "A + M"
+        log_step(f"{step}.2", A_temp, Q, operation, op_note, y)
 
         y += 40
-        if A_temp[0] == "1":
-            A = bin_add(A_temp, M)
-            Q = Q[:-1] + "0"
-            log_step(
-                f"{step}.3",
-                A,
-                Q,
-                "A + M",
-                "A < 0 → Restored A, Q0 ← 0",
-                y,
-                draw_link=True,
-            )
-
-        else:
-            A = A_temp
+        # Substep 3: Set Q0
+        if A_temp[0] == "0":
             Q = Q[:-1] + "1"
-            log_step(f"{step}.3", A, Q, "Keep A", "A ≥ 0 → Q0 ← 1", y, draw_link=True)
+            note = "A ≥ 0 → Q0 ← 1"
+        else:
+            Q = Q[:-1] + "0"
+            note = "A < 0 → Q0 ← 0"
+        A = A_temp
+        log_step(f"{step}.3", A, Q, "Set Q0", note, y, draw_link=True)
+
+    # Final correction if A < 0
+    if A[0] == "1":
+        y += 60
+        A = bin_add(A, M)
+        log_step("F", A, Q, "Restore A", "A was negative → A + M", y)
 
     y += 60
     result_text = f"Final Quotient: {Q}, Remainder: {A}"
@@ -162,7 +159,5 @@ def restoring_division(dividend, divisor):
 
 
 if __name__ == "__main__":
-    # dividend = input("Enter 4-bit dividend (e.g. 1100): ")
-    # divisor = input("Enter 4-bit divisor  (e.g. 0011): ")
-    # restoring_division(dividend, divisor)
-    restoring_division("1000", "0011")
+    # Run with 4-bit inputs
+    non_restoring_division("1011", "0011")  # 12 ÷ 3
