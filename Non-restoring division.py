@@ -48,8 +48,10 @@ def draw_title():
 
 
 def draw_step_header(step_num, y_offset):
+    # colors = [(0, 255, 0), (0, 180, 255), (255, 128, 0), (255, 0, 128)]
+    color = (100, 255, 100)
     step_text = f"Step {step_num}"
-    label = small_font.render(step_text, True, (0, 255, 0))
+    label = small_font.render(step_text, True, color)
     pygame.draw.line(screen, (100, 100, 100), (40, y_offset), (1150, y_offset), 2)
     screen.blit(label, (50, y_offset - 30))
     pygame.display.update()
@@ -58,11 +60,28 @@ def draw_step_header(step_num, y_offset):
 def log_step(substep, A, Q, op, note, y_offset, draw_link=False):
     if draw_link:
         draw_connection_line(A, Q, y_offset)
-    values = [str(substep), A, Q, op, note]
+
+    op_colors = {
+        "INIT": (200, 200, 200),
+        "Shift Left": (0, 180, 255),
+        "A - M": (255, 0, 128),
+        "A + M": (255, 128, 0),
+        "Set Q0": (255, 215, 0),
+    }
+
     positions = [50, 150, 350, 500, 750]
+    values = [str(substep), A, Q, op, note]
+
     for i, val in enumerate(values):
-        v_text = small_font.render(val, True, (255, 255, 255))
+        if i == 3:
+            color = op_colors.get(op, (255, 255, 255))
+        elif i == 0:
+            color = (180, 180, 255)
+        else:
+            color = (255, 255, 255)
+        v_text = small_font.render(val, True, color)
         screen.blit(v_text, (positions[i], y_offset))
+
     pygame.display.update()
     wait(1.1)
 
@@ -75,19 +94,38 @@ def draw_connection_line(A, Q, y_offset):
     top_y = mid_y - 7
     bottom_y = top_y + 12
 
-    pygame.draw.line(screen, (0, 255, 255), (msb_a_x, top_y), (msb_a_x, mid_y), 2)
-    pygame.draw.line(screen, (0, 255, 255), (msb_a_x, mid_y), (lsb_q_x, mid_y), 2)
-    pygame.draw.line(screen, (0, 255, 255), (lsb_q_x, mid_y), (lsb_q_x, bottom_y), 2)
-
+    color = (0, 255, 255)
+    line_width = 2
     arrow_height = 6
     arrow_width = 3
+
+    # Step 1: Vertical line up from MSB of A
+    for y in range(top_y, mid_y + 1):
+        pygame.draw.line(screen, color, (msb_a_x, top_y), (msb_a_x, y), line_width)
+        pygame.display.flip()
+        pygame.time.delay(10)
+
+    # Step 2: Horizontal line to LSB of Q
+    for x in range(msb_a_x, lsb_q_x + 1, 2):  # step by 2 for speed
+        pygame.draw.line(screen, color, (msb_a_x, mid_y), (x, mid_y), line_width)
+        pygame.display.flip()
+        pygame.time.delay(5)
+
+    # Step 3: Vertical line down into Q
+    for y in range(mid_y, bottom_y + 1):
+        pygame.draw.line(screen, color, (lsb_q_x, mid_y), (lsb_q_x, y), line_width)
+        pygame.display.flip()
+        pygame.time.delay(10)
+
+    # Step 4: Draw arrowhead at the bottom
     arrow_points = [
-        (lsb_q_x - arrow_width, bottom_y),
-        (lsb_q_x + arrow_width, bottom_y),
-        (lsb_q_x, bottom_y + arrow_height),
+        (lsb_q_x - arrow_width, bottom_y),  # Left of the arrow base
+        (lsb_q_x + arrow_width, bottom_y),  # Right of the arrow base
+        (lsb_q_x, bottom_y + arrow_height),  # Tip of the arrow
     ]
-    pygame.draw.polygon(screen, (0, 255, 255), arrow_points)
-    wait(0.2)
+    pygame.draw.polygon(screen, color, arrow_points)
+    pygame.display.flip()
+    pygame.time.delay(200)
 
 
 def non_restoring_division(dividend, divisor):
@@ -141,12 +179,14 @@ def non_restoring_division(dividend, divisor):
 
     y += 60
     result_text = f"Final Quotient: {Q}, Remainder: {A}"
-    result_render = small_font.render(result_text, True, (255, 255, 0))
+    result_render = small_font.render(result_text, True, (255, 215, 0))  # Bright gold
     screen.blit(result_render, (50, y))
 
     y += 22
     dec_result_text = f"(Decimal) Dividend: {int(dividend,2)} Divisor: {int(divisor,2)} Quotient: {int(Q,2)}, Remainder: {int(A,2)}"
-    dec_result_render = small_font.render(dec_result_text, True, (255, 255, 0))
+    dec_result_render = small_font.render(
+        dec_result_text, True, (173, 216, 230)
+    )  # Light blue
     screen.blit(dec_result_render, (50, y))
 
     pygame.display.update()
