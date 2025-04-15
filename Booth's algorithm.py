@@ -24,7 +24,6 @@ def arithmetic_right_shift(A, Q, Q_1):
     return shifted[: len(A)], shifted[len(A) : -1], shifted[-1]
 
 
-# -------- Pygame Setup -------- #
 pygame.init()
 WIDTH, HEIGHT = 1200, 900
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -47,22 +46,29 @@ def wait(seconds):
 
 def draw_registers(step, A, Q, Q_1, msg):
     row_y = 80 + step * 80
+    start_x = 160
+    cell_width = 90
 
-    # Table cells
-    pygame.draw.rect(screen, (255, 255, 255), (50, row_y, 90, 45), 1)  # A
-    pygame.draw.rect(screen, (255, 255, 255), (140, row_y, 90, 45), 1)  # Q
-    pygame.draw.rect(screen, (255, 255, 255), (230, row_y, 90, 45), 1)  # Q-1
-    pygame.draw.rect(screen, (255, 255, 255), (320, row_y, 620, 45), 1)  # Operation
+    pygame.draw.rect(screen, (255, 255, 255), (start_x, row_y, cell_width, 45), 1)
+    pygame.draw.rect(
+        screen, (255, 255, 255), (start_x + cell_width, row_y, cell_width, 45), 1
+    )
+    pygame.draw.rect(
+        screen, (255, 255, 255), (start_x + 2 * cell_width, row_y, cell_width, 45), 1
+    )
+    pygame.draw.rect(
+        screen, (255, 255, 255), (start_x + 3 * cell_width, row_y, 620, 45), 1
+    )
 
     A_text = font.render(A, True, (0, 255, 0))
     Q_text = font.render(Q, True, (0, 200, 255))
     Q1_text = font.render(Q_1, True, (255, 200, 0))
     Msg_text = small_font.render(msg, True, (255, 255, 255))
 
-    screen.blit(A_text, (60, row_y + 10))
-    screen.blit(Q_text, (150, row_y + 10))
-    screen.blit(Q1_text, (240, row_y + 10))
-    screen.blit(Msg_text, (330, row_y + 12))
+    screen.blit(A_text, (start_x + 10, row_y + 10))
+    screen.blit(Q_text, (start_x + cell_width + 10, row_y + 10))
+    screen.blit(Q1_text, (start_x + 2 * cell_width + 10, row_y + 10))
+    screen.blit(Msg_text, (start_x + 3 * cell_width + 10, row_y + 12))
 
     pygame.display.update()
     wait(1.2)
@@ -71,7 +77,12 @@ def draw_registers(step, A, Q, Q_1, msg):
 def draw_column_headers():
     header_font = pygame.font.SysFont("consolas", 26, bold=True)
     labels = ["A", "Q", "Q-1", "Operation"]
-    positions = [90, 180, 250, 550]
+    start_x = 190
+    cell_width = 90
+    positions = [start_x + i * cell_width for i in range(3)] + [
+        start_x + 3 * cell_width + 230
+    ]
+
     for label, x in zip(labels, positions):
         label_surface = header_font.render(label, True, (255, 255, 255))
         screen.blit(label_surface, (x, 40))
@@ -83,7 +94,7 @@ def draw_arrows(y, num_bits=8, default_angle_deg=70):
     default_arrow_length = 30
     arrowhead_size = 10
     spacing = 140 // num_bits
-    start_x = 70
+    start_x = 180
 
     for i in range(num_bits):
         angle_deg = 40 if (i + 1) % 4 == 0 else default_angle_deg
@@ -119,7 +130,8 @@ def draw_arrows(y, num_bits=8, default_angle_deg=70):
 
 def draw_title():
     screen.fill((20, 20, 20))
-    title = font.render("Booth's Algorithm", True, (255, 255, 255))
+    title_font = pygame.font.SysFont("bahnschrift", 26)
+    title = title_font.render("Booth's Algorithm", True, (255, 255, 255))
     screen.blit(title, (WIDTH // 2 - title.get_width() // 2, 5))
 
 
