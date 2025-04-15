@@ -6,7 +6,7 @@ pygame.init()
 WIDTH, HEIGHT = 1200, 900
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Non-Restoring Division - Blackboard Style")
-font = pygame.font.SysFont("consolas", 26)
+font = pygame.font.SysFont("bahnschrift", 26)
 small_font = pygame.font.SysFont("consolas", 22)
 clock = pygame.time.Clock()
 
@@ -43,7 +43,7 @@ def draw_title():
     positions = [50, 150, 350, 500, 750]
     for i, header in enumerate(headers):
         h_text = small_font.render(header, True, (200, 200, 200))
-        screen.blit(h_text, (positions[i], 80))
+        screen.blit(h_text, (positions[i], 60))
     pygame.display.update()
 
 
@@ -60,7 +60,6 @@ def draw_step_header(step_num, y_offset):
 def log_step(substep, A, Q, op, note, y_offset, draw_link=False):
     if draw_link:
         draw_connection_line(A, Q, y_offset)
-
     op_colors = {
         "INIT": (200, 200, 200),
         "Shift Left": (0, 180, 255),
@@ -68,7 +67,6 @@ def log_step(substep, A, Q, op, note, y_offset, draw_link=False):
         "A + M": (255, 128, 0),
         "Set Q0": (255, 215, 0),
     }
-
     positions = [50, 150, 350, 500, 750]
     values = [str(substep), A, Q, op, note]
 
@@ -87,9 +85,8 @@ def log_step(substep, A, Q, op, note, y_offset, draw_link=False):
 
 
 def draw_connection_line(A, Q, y_offset):
-    msb_a_x = 155 + 10 * 0  # A starts at x=150, MSB is at char index 0
-    lsb_q_x = 365 + 10 * (len(Q) - 1)  # Q starts at x=350
-
+    msb_a_x = 155 + 10 * 0
+    lsb_q_x = 365 + 10 * (len(Q) - 1)
     mid_y = y_offset - 8
     top_y = mid_y - 7
     bottom_y = top_y + 12
@@ -99,29 +96,25 @@ def draw_connection_line(A, Q, y_offset):
     arrow_height = 6
     arrow_width = 3
 
-    # Step 1: Vertical line up from MSB of A
     for y in range(top_y, mid_y + 1):
         pygame.draw.line(screen, color, (msb_a_x, top_y), (msb_a_x, y), line_width)
         pygame.display.flip()
         pygame.time.delay(10)
 
-    # Step 2: Horizontal line to LSB of Q
-    for x in range(msb_a_x, lsb_q_x + 1, 2):  # step by 2 for speed
+    for x in range(msb_a_x, lsb_q_x + 1, 2):
         pygame.draw.line(screen, color, (msb_a_x, mid_y), (x, mid_y), line_width)
         pygame.display.flip()
         pygame.time.delay(5)
 
-    # Step 3: Vertical line down into Q
     for y in range(mid_y, bottom_y + 1):
         pygame.draw.line(screen, color, (lsb_q_x, mid_y), (lsb_q_x, y), line_width)
         pygame.display.flip()
         pygame.time.delay(10)
 
-    # Step 4: Draw arrowhead at the bottom
     arrow_points = [
-        (lsb_q_x - arrow_width, bottom_y),  # Left of the arrow base
-        (lsb_q_x + arrow_width, bottom_y),  # Right of the arrow base
-        (lsb_q_x, bottom_y + arrow_height),  # Tip of the arrow
+        (lsb_q_x - arrow_width, bottom_y),
+        (lsb_q_x + arrow_width, bottom_y),
+        (lsb_q_x, bottom_y + arrow_height),
     ]
     pygame.draw.polygon(screen, color, arrow_points)
     pygame.display.flip()
@@ -129,27 +122,24 @@ def draw_connection_line(A, Q, y_offset):
 
 
 def non_restoring_division(dividend, divisor):
+    wait(2)
     n = 4
     A = "00000"
     Q = dividend.zfill(n)
     M = divisor.zfill(5)
-
     draw_title()
-    y = 120
+    y = 100
     log_step("0", A, Q, "INIT", "Initial state", y)
 
     for step in range(1, n + 1):
         y += 80
         draw_step_header(step, y - 20)
-
-        # Substep 1: Shift left AQ
         AQ = A + Q
         AQ = AQ[1:] + "0"
         A, Q = AQ[:5], AQ[5:]
         log_step(f"{step}.1", A, Q, "Shift Left", "A and Q shifted", y)
 
         y += 40
-        # Substep 2: A +/- M depending on sign of A
         if A[0] == "0":
             A_temp = bin_sub(A, M)
             op_note = "A ≥ 0 → A - M"
@@ -161,7 +151,6 @@ def non_restoring_division(dividend, divisor):
         log_step(f"{step}.2", A_temp, Q, operation, op_note, y)
 
         y += 40
-        # Substep 3: Set Q0
         if A_temp[0] == "0":
             Q = Q[:-1] + "1"
             note = "A ≥ 0 → Q0 ← 1"
@@ -171,22 +160,19 @@ def non_restoring_division(dividend, divisor):
         A = A_temp
         log_step(f"{step}.3", A, Q, "Set Q0", note, y, draw_link=True)
 
-    # Final correction if A < 0
     if A[0] == "1":
-        y += 60
+        y += 40
         A = bin_add(A, M)
         log_step("F", A, Q, "Restore A", "A was negative → A + M", y)
 
     y += 60
     result_text = f"Final Quotient: {Q}, Remainder: {A}"
-    result_render = small_font.render(result_text, True, (255, 215, 0))  # Bright gold
+    result_render = small_font.render(result_text, True, (255, 215, 0))
     screen.blit(result_render, (50, y))
 
     y += 22
     dec_result_text = f"(Decimal) Dividend: {int(dividend,2)} Divisor: {int(divisor,2)} Quotient: {int(Q,2)}, Remainder: {int(A,2)}"
-    dec_result_render = small_font.render(
-        dec_result_text, True, (173, 216, 230)
-    )  # Light blue
+    dec_result_render = small_font.render(dec_result_text, True, (173, 216, 230))
     screen.blit(dec_result_render, (50, y))
 
     pygame.display.update()
@@ -199,5 +185,7 @@ def non_restoring_division(dividend, divisor):
 
 
 if __name__ == "__main__":
-    # Run with 4-bit inputs
-    non_restoring_division("1011", "0011")  # 12 ÷ 3
+    dividend = input("Enter 4-bit dividend: ")
+    divisor = input("Enter 4-bit divisor: ")
+    non_restoring_division(dividend, divisor)
+    # non_restoring_division("1011", "0011")

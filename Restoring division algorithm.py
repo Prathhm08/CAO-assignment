@@ -6,7 +6,7 @@ pygame.init()
 WIDTH, HEIGHT = 1200, 900
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Restoring Division - Blackboard Style")
-font = pygame.font.SysFont("consolas", 26)
+font = pygame.font.SysFont("bahnschrift", 26)
 small_font = pygame.font.SysFont("consolas", 22)
 clock = pygame.time.Clock()
 
@@ -60,7 +60,6 @@ def draw_step_header(step_num, y_offset):
 def log_step(substep, A, Q, op, note, y_offset, draw_link=False):
     if draw_link:
         draw_connection_line(A, Q, y_offset)
-
     op_colors = {
         "INIT": (200, 200, 200),
         "Shift Left": (0, 180, 255),
@@ -68,7 +67,6 @@ def log_step(substep, A, Q, op, note, y_offset, draw_link=False):
         "A + M": (255, 128, 0),
         "Keep A": (255, 215, 0),
     }
-
     positions = [50, 150, 350, 500, 750]
     values = [str(substep), A, Q, op, note]
 
@@ -81,15 +79,13 @@ def log_step(substep, A, Q, op, note, y_offset, draw_link=False):
             color = (255, 255, 255)
         v_text = small_font.render(val, True, color)
         screen.blit(v_text, (positions[i], y_offset))
-
     pygame.display.update()
     wait(1.1)
 
 
 def draw_connection_line(A, Q, y_offset):
-    msb_a_x = 155 + 10 * 0  # A starts at x=150, MSB is at char index 0
-    lsb_q_x = 365 + 10 * (len(Q) - 1)  # Q starts at x=350
-
+    msb_a_x = 155 + 10 * 0
+    lsb_q_x = 365 + 10 * (len(Q) - 1)
     mid_y = y_offset - 8
     top_y = mid_y - 7
     bottom_y = top_y + 12
@@ -99,29 +95,25 @@ def draw_connection_line(A, Q, y_offset):
     arrow_height = 6
     arrow_width = 3
 
-    # Step 1: Vertical line up from MSB of A
     for y in range(top_y, mid_y + 1):
         pygame.draw.line(screen, color, (msb_a_x, top_y), (msb_a_x, y), line_width)
         pygame.display.flip()
         pygame.time.delay(10)
 
-    # Step 2: Horizontal line to LSB of Q
-    for x in range(msb_a_x, lsb_q_x + 1, 2):  # step by 2 for speed
+    for x in range(msb_a_x, lsb_q_x + 1, 2):
         pygame.draw.line(screen, color, (msb_a_x, mid_y), (x, mid_y), line_width)
         pygame.display.flip()
         pygame.time.delay(5)
 
-    # Step 3: Vertical line down into Q
     for y in range(mid_y, bottom_y + 1):
         pygame.draw.line(screen, color, (lsb_q_x, mid_y), (lsb_q_x, y), line_width)
         pygame.display.flip()
         pygame.time.delay(10)
 
-    # Step 4: Draw arrowhead at the bottom
     arrow_points = [
-        (lsb_q_x - arrow_width, bottom_y),  # Left of the arrow base
-        (lsb_q_x + arrow_width, bottom_y),  # Right of the arrow base
-        (lsb_q_x, bottom_y + arrow_height),  # Tip of the arrow
+        (lsb_q_x - arrow_width, bottom_y),
+        (lsb_q_x + arrow_width, bottom_y),
+        (lsb_q_x, bottom_y + arrow_height),
     ]
     pygame.draw.polygon(screen, color, arrow_points)
     pygame.display.flip()
@@ -129,11 +121,11 @@ def draw_connection_line(A, Q, y_offset):
 
 
 def restoring_division(dividend, divisor):
-    n = 4  # Q is 4-bit
-    A = "00000"  # A is now 5-bit
+    wait(2)
+    n = 4
+    A = "00000"
     Q = dividend.zfill(n)
-    M = divisor.zfill(5)  # M same width as A
-
+    M = divisor.zfill(5)
     draw_title()
     y = 120
     step = 0
@@ -143,15 +135,12 @@ def restoring_division(dividend, divisor):
         step += 1
         y += 80
         draw_step_header(step, y - 20)
-
-        # Substep 1: Shift left
         AQ = A + Q
         AQ = AQ[1:] + "0"
         A, Q = AQ[:5], AQ[5:]
         log_step(f"{step}.1", A, Q, "Shift Left", "A and Q shifted", y)
 
         y += 40
-        # Substep 2: A - M
         A_temp = bin_sub(A, M)
         log_step(f"{step}.2", A_temp, Q, "A - M", "Trial subtraction", y)
 
@@ -176,14 +165,12 @@ def restoring_division(dividend, divisor):
 
     y += 60
     result_text = f"Final Quotient: {Q}, Remainder: {A}"
-    result_render = small_font.render(result_text, True, (255, 215, 0))  # Bright gold
+    result_render = small_font.render(result_text, True, (255, 215, 0))
     screen.blit(result_render, (50, y))
 
     y += 22
     dec_result_text = f"(Decimal) Dividend: {int(dividend,2)} Divisor: {int(divisor,2)} Quotient: {int(Q,2)}, Remainder: {int(A,2)}"
-    dec_result_render = small_font.render(
-        dec_result_text, True, (173, 216, 230)
-    )  # Light blue
+    dec_result_render = small_font.render(dec_result_text, True, (173, 216, 230))
     screen.blit(dec_result_render, (50, y))
 
     pygame.display.update()
@@ -196,7 +183,7 @@ def restoring_division(dividend, divisor):
 
 
 if __name__ == "__main__":
-    # dividend = input("Enter 4-bit dividend (e.g. 1100): ")
-    # divisor = input("Enter 4-bit divisor  (e.g. 0011): ")
-    # restoring_division(dividend, divisor)
-    restoring_division("1000", "0011")
+    dividend = input("Enter 4-bit dividend: ")
+    divisor = input("Enter 4-bit divisor: ")
+    restoring_division(dividend, divisor)
+    # restoring_division("1000", "0011")

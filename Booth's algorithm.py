@@ -4,7 +4,6 @@ import time
 import math
 
 
-# -------- Utility Functions -------- #
 def twos_complement(bin_str):
     n = len(bin_str)
     return bin((1 << n) - int(bin_str, 2))[2:].zfill(n)
@@ -46,17 +45,15 @@ def wait(seconds):
         clock.tick(60)
 
 
-# -------- Draw Functions -------- #
 def draw_registers(step, A, Q, Q_1, msg):
-    row_y = 80 + step * 80  # Starting lower + more compact rows
+    row_y = 80 + step * 80
 
-    # Draw table cells
+    # Table cells
     pygame.draw.rect(screen, (255, 255, 255), (50, row_y, 90, 45), 1)  # A
     pygame.draw.rect(screen, (255, 255, 255), (140, row_y, 90, 45), 1)  # Q
     pygame.draw.rect(screen, (255, 255, 255), (230, row_y, 90, 45), 1)  # Q-1
     pygame.draw.rect(screen, (255, 255, 255), (320, row_y, 620, 45), 1)  # Operation
 
-    # Draw text inside cells
     A_text = font.render(A, True, (0, 255, 0))
     Q_text = font.render(Q, True, (0, 200, 255))
     Q1_text = font.render(Q_1, True, (255, 200, 0))
@@ -84,12 +81,11 @@ def draw_column_headers():
 def draw_arrows(y, num_bits=8, default_angle_deg=70):
     arrow_color = (255, 100, 100)
     default_arrow_length = 30
-    arrowhead_size = 10  # Increased for better visibility
+    arrowhead_size = 10
     spacing = 140 // num_bits
     start_x = 70
 
     for i in range(num_bits):
-        # Use 40° angle and longer arrow every 4th
         angle_deg = 40 if (i + 1) % 4 == 0 else default_angle_deg
         arrow_length = 40 if (i + 1) % 4 == 0 else default_arrow_length
         angle_rad = math.radians(angle_deg)
@@ -101,10 +97,7 @@ def draw_arrows(y, num_bits=8, default_angle_deg=70):
         x_end = x_start + dx
         y_end = y + dy
 
-        # Draw slanted line
         pygame.draw.line(screen, arrow_color, (x_start, y), (x_end, y_end), 2)
-
-        # Draw larger arrowhead
         pygame.draw.polygon(
             screen,
             arrow_color,
@@ -120,26 +113,29 @@ def draw_arrows(y, num_bits=8, default_angle_deg=70):
                 ),
             ],
         )
-
     pygame.display.update()
     wait(0.2)
 
 
+def draw_title():
+    screen.fill((20, 20, 20))
+    title = font.render("Booth's Algorithm", True, (255, 255, 255))
+    screen.blit(title, (WIDTH // 2 - title.get_width() // 2, 5))
+
+
 def twos_comp_to_dec(binary_str):
-    # Check if it's negative
     if binary_str[0] == "1":
-        # 2's complement: invert + add 1
         inverted = "".join("1" if b == "0" else "0" for b in binary_str)
         decimal_value = int(inverted, 2) + 1
         return -decimal_value
     else:
-        # Positive number
         return int(binary_str, 2)
 
 
-# -------- Booth’s Algorithm -------- #
 def booths_algorithm(multiplicand, multiplier):
+    wait(2)
     screen.fill((30, 30, 30))
+    draw_title()
     draw_column_headers()
 
     M = multiplicand.zfill(4)
@@ -148,13 +144,11 @@ def booths_algorithm(multiplicand, multiplier):
     Q_1 = "0"
     count = 4
     step = 0
-
     draw_registers(step, A, Q, Q_1, "Initial State")
 
     for _ in range(count):
         step += 1
         msg = ""
-
         if Q[-1] + Q_1 == "10":
             A = binary_sub(A, M)
             msg = "Q[0]Q-1 = 10 → A = A - M"
@@ -163,10 +157,8 @@ def booths_algorithm(multiplicand, multiplier):
             msg = "Q[0]Q-1 = 01 → A = A + M"
         else:
             msg = "Q[0]Q-1 = 00 or 11 → No Operation"
-
         draw_registers(step, A, Q, Q_1, msg)
 
-        # Shift all (A, Q, Q-1) right
         A, Q, Q_1 = arithmetic_right_shift(A, Q, Q_1)
         step += 1
         draw_arrows(15 + step * 80 + 30, num_bits=len(A + Q))
@@ -181,7 +173,6 @@ def booths_algorithm(multiplicand, multiplier):
         f"Final Product: {A + Q} (Decimal : {twos_comp_to_dec(multiplicand)} X {twos_comp_to_dec(multiplier)} = {twos_comp_to_dec(A + Q)})",
     )
 
-    # Keep window open
     running = True
     while running:
         for event in pygame.event.get():
@@ -194,9 +185,8 @@ def booths_algorithm(multiplicand, multiplier):
     sys.exit()
 
 
-# -------- Inputs -------- #
 if __name__ == "__main__":
-    # multiplicand = input("Enter 4-bit multiplicand (e.g., 1101): ")
-    # multiplier = input("Enter 4-bit multiplier   (e.g., 0011): ")
-    # booths_algorithm(multiplicand, multiplier)
-    booths_algorithm("1101", "0111")
+    multiplicand = input("Enter 4-bit multiplicand: ")
+    multiplier = input("Enter 4-bit multiplier: ")
+    booths_algorithm(multiplicand, multiplier)
+    # booths_algorithm("1101", "0111")
