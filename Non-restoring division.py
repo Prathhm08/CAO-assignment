@@ -124,6 +124,28 @@ def draw_connection_line(A, Q, y_offset):
 def non_restoring_division(dividend, divisor):
     wait(2)
     n = 4
+    if int(divisor, 2) == 0:
+        draw_title()
+        y = 100
+        log_step(
+            "-",
+            "-----",
+            dividend.zfill(n),
+            "ERROR",
+            "Division by zero is undefined!",
+            y,
+        )
+        result_text = f"Undefined: Division by 0"
+        result_render = small_font.render(result_text, True, (255, 0, 0))
+        screen.blit(result_render, (50, y + 60))
+        pygame.display.update()
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+            clock.tick(60)
+
     A = "00000"
     Q = dividend.zfill(n)
     M = divisor.zfill(5)
