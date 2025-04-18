@@ -120,6 +120,13 @@ def draw_connection_line(A, Q, y_offset):
     pygame.time.delay(200)
 
 
+def decimal_to_4bit(n):
+    if n >= 0:
+        return format(n, "04b")
+    else:
+        return format((1 << 4) + n, "04b")
+
+
 def restoring_division(dividend, divisor):
     wait(2)
     n = 4
@@ -204,7 +211,7 @@ def restoring_division(dividend, divisor):
 
 
 if __name__ == "__main__":
-    dividend = input("Enter 4-bit dividend: ")
-    divisor = input("Enter 4-bit divisor: ")
-    restoring_division(dividend, divisor)
+    dividend = int(input("Enter dividend: "))
+    divisor = int(input("Enter divisor: "))
+    restoring_division(decimal_to_4bit(dividend), decimal_to_4bit(divisor))
     # restoring_division("1000", "0011")

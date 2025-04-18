@@ -144,6 +144,17 @@ def twos_comp_to_dec(binary_str):
         return int(binary_str, 2)
 
 
+def decimal_to_4bit(n):
+    if n < -8 or n > 7:
+        raise ValueError(
+            "Only numbers from -8 to +7 can be represented in 4-bit two's complement"
+        )
+    if n >= 0:
+        return format(n, "04b")
+    else:
+        return format((1 << 4) + n, "04b")
+
+
 def booths_algorithm(multiplicand, multiplier):
     wait(2)
     screen.fill((30, 30, 30))
@@ -198,7 +209,7 @@ def booths_algorithm(multiplicand, multiplier):
 
 
 if __name__ == "__main__":
-    multiplicand = input("Enter 4-bit multiplicand: ")
-    multiplier = input("Enter 4-bit multiplier: ")
-    booths_algorithm(multiplicand, multiplier)
+    multiplicand = int(input("Enter multiplicand: "))
+    multiplier = int(input("Enter multiplier: "))
+    booths_algorithm(decimal_to_4bit(multiplicand), decimal_to_4bit(multiplier))
     # booths_algorithm("1101", "0111")
